@@ -1,0 +1,19 @@
+FROM gradescope/autograder-base
+
+RUN useradd -u 1001 student
+
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt update
+RUN apt install -y python3-seccomp
+
+ADD resources/ /autograder
+
+RUN /gradescope/setup.sh
+
+ENV SECCOMP_BLOCK_IP false
+ENV SECCOMP_BLOCK_INOTIFY false
+ENV VERIFY_NONCE false 
+
+# override CMD; we don't want gradescope to update the harness to one that doesn't do nonce checking or user privilege dropping
+CMD ["/autograder/harness.py"]

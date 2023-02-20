@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+# Set up autograder files
+
+chown -R student:student /autograder/source
+
+cp /autograder/submission/calculator.py /autograder/source/calculator.py
+
+cd /autograder/source
+
+su student -c "python3 run_tests.py"
