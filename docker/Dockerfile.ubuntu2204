@@ -5,11 +5,11 @@ RUN useradd -u 1001 student
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt update
-RUN apt install -y python3-seccomp
+RUN apt install -y python3 python3-pip python3-dev python3-seccomp
+RUN apt clean
+RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 ADD resources/ /autograder
-
-RUN /gradescope/setup.sh
 
 ENV SECCOMP_BLOCK_IP false
 ENV SECCOMP_BLOCK_INOTIFY false

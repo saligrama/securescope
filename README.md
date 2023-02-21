@@ -92,6 +92,8 @@ RUN cp /autograder/source/run_autograder /autograder/run_autograder
 RUN dos2unix /autograder/run_autograder /autograder/source/setup.sh
 RUN chmod +x /autograder/run_autograder
 
+RUN /autograder/source/setup.sh
+
 # Example: install extras needed by your autograder
 RUN pip install numpy
 
