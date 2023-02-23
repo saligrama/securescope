@@ -2,6 +2,8 @@
 
 Securescope is an autograder base Docker image for Gradescope with improved security.
 
+**TLDR: Securescope is a drop-in replacement for your existing base Docker image with optional security features. To start using Securescope, just inherit from our image on Docker Hub.**
+
 > The following documentation assumes familiarity with Gradescope's autograder flow and requirements. For more information, please refer to [Gradescope's autograder documentation](https://gradescope-autograders.readthedocs.io/en/latest/manual_docker/).
 
 ## Motivation
@@ -70,13 +72,19 @@ To enable nonce verification, set the `VERIFY_NONCE` environment variable to `tr
 ENV VERIFY_NONCE true
 ```
 
-> Note that it would still be possible for student code to modify `results.json` *even after the nonce is added* by using `inotify` events to watch for changes to `results.json`. To prevent this attack, Securescope can use `seccomp` to block the `inotify_add_watch` system call; enable this by setting the `SECCOMP_BLOCK_INOTIFY` environment variable to `true`.
->
-> **This is also disabled by default** to prevent interference with client autograder code that may depend on `inotify`.
+Note that it would still be possible for student code to modify `results.json` *even after the nonce is added* by using `inotify` events to watch for changes to `results.json`. To prevent this attack, Securescope can use `seccomp` to block the `inotify_add_watch` system call; enable this by setting the `SECCOMP_BLOCK_INOTIFY` environment variable to `true`.
+
+**This is also disabled by default** to prevent interference with client autograder code that may depend on `inotify`.
 
 ## Usage
 
-Usage of Securescope should work the same way as [extending a base Gradescope autograder docker image](https://gradescope-autograders.readthedocs.io/en/latest/manual_docker/). For example, see the following Dockerfile.
+Usage of Securescope should work the same way as [extending a base Gradescope autograder docker image](https://gradescope-autograders.readthedocs.io/en/latest/manual_docker/).
+
+Currently, an Ubuntu 22.04 image is [available on Docker Hub](https://hub.docker.com/r/saligrama/securescope/). More builds to come soon.
+
+**Securescope is a drop-in replacement for Gradescope's base Docker images**. By default, all security features are disabled for backwards compatibility with existing autograder code. When you enable each feature, make sure you make the suggested modifications to your autograder code in order to maintain functionality and to take full advantage of the feature.
+
+For example, see the following Dockerfile.
 
 ```Docker
 ARG BASE_REPO=saligrama/securescope
@@ -106,3 +114,9 @@ ENV VERIFY_NONCE true
 # Example: enable inotify watch blocking
 ENV SECCOMP_BLOCK_INOTIFY true
 ```
+
+## Caveats
+
+**Nonce verification**: Note that for some languages such as Python, stack introspection can allow student code to retrieve the nonce from your autograder code's stack frame. One possible mitigation, if your autograder code cannot be viewed by students, is to obfuscate the name of the variable storing the nonce, potentially adding additional similar-looking variables to prevent student code from reliably guessing the true nonce.
+
+In general, there can only be security guarantees if autograder code and student code are run by different processes with different user privileges. If your autograder code imports student code as a module, then the student code likely has unrestricted access to your autograder's memory, potentially enabling these kinds of attacks.
